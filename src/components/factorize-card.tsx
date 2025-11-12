@@ -6,6 +6,7 @@ import katex from "katex";
 import { toast } from "sonner";
 
 import { PartialFraction } from "@/lib/partial-fractions";
+import { Heading } from "@/components/typography/heading";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,10 +17,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-
-import { Heading } from "./typography/heading";
-import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 
 const INITIAL_LATEX = "\\int \\frac{5x + 3}{(x + 2)(x - 2)} ~\\mathrm{d}x";
 

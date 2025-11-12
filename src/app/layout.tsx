@@ -5,6 +5,8 @@ import { ThemeProvider } from "next-themes";
 import "@/styles/globals.css";
 import "katex/dist/katex.min.css";
 
+import { Toaster } from "@/components/ui/sonner";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -23,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-svh font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"
@@ -32,6 +34,8 @@ export default function RootLayout({
           enableSystem
         >
           {children}
+
+          <Toaster position="top-center" richColors />
         </ThemeProvider>
       </body>
     </html>
