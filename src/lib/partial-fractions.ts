@@ -32,6 +32,8 @@ export class PartialFraction {
     // 2. Parse numerator and denominator
     this.coefficients = this.extractCoefficients(this.numerator);
     this.factors = this.extractRoots(this.denominator);
+    // 3. Set the expression type based on factors
+    this.setExpressionType();
   }
 
   private splitFraction(expression: string) {
@@ -129,9 +131,71 @@ export class PartialFraction {
     return factors;
   }
 
+  private setExpressionType(): void {
+    if (this.hasLinear && !this.hasQuadratic) {
+      this.type = "linear";
+    } else if (!this.hasLinear && this.hasQuadratic) {
+      this.type = "quadratic";
+    } else if (this.hasLinear && this.hasQuadratic) {
+      this.type = "mixed";
+    } else {
+      this.type = "unknown";
+    }
+  }
+
   public solve(): string {
     const partialFractionForm = this.getPartialFractionForm();
     const expandedForm = this.getExpandedForm();
+
+    let result = "";
+
+    if (this.type === "linear") {
+      if (
+        this.factors.length > 2 || // Limita ao caso de 2 fatores
+        this.factors[0].multiplicity > 1 ||
+        this.factors[1].multiplicity > 1
+      ) {
+        throw new Error("A expressão não é suportada.");
+      }
+
+      const c1_coeff = this.coefficients.find((c) => c.power === 1);
+      const c2_coeff = this.coefficients.find((c) => c.power === 0);
+
+      const c1 = c1_coeff ? Number(c1_coeff.value) : 0; // Coeficiente de x
+      const c2 = c2_coeff ? Number(c2_coeff.value) : 0; // Constante
+
+      const r1 = Number(this.factors[0].root!);
+      const r2 = Number(this.factors[1].root!);
+
+      const A = (c1 * r1 + c2) / (r1 - r2);
+      const B = (c1 * r2 + c2) / (r2 - r1);
+
+      result = `
+        A = ${A} \\qquad B = ${B}
+
+        \\\\ \\\\ \\displaystyle
+
+        \\frac{${A}}{${this.factors[0].content}} +
+        \\frac{${B}}{${this.factors[1].content}}
+
+        \\\\ \\\\ \\displaystyle
+
+        \\int \\frac{${A}}{${this.factors[0].content}} ~\\mathrm{d}x +
+        \\int \\frac{${B}}{${this.factors[1].content}} ~\\mathrm{d}x
+
+        \\\\ \\\\ \\displaystyle
+
+        ${A} \\cdot \\int \\frac{1}{${this.factors[0].content}} ~\\mathrm{d}x +
+        ${B} \\cdot \\int \\frac{1}{${this.factors[1].content}} ~\\mathrm{d}x
+
+        \\\\ \\\\ \\displaystyle
+
+        ${A} \\cdot \\ln | ${this.factors[0].content} | +
+        ${B} \\cdot \\ln | ${this.factors[1].content} | + C
+      `;
+    } else {
+      throw new Error("Tipo de expressão não suportado.");
+    }
 
     return `\\begin{array}{l} \\displaystyle
       ${partialFractionForm}
@@ -139,6 +203,8 @@ export class PartialFraction {
       \\frac{${this.numerator}}{${this.denominator}} = \\frac{${expandedForm}}{${this.denominator}}
       \\\\ \\\\ \\displaystyle
       ${this.numerator} = ${expandedForm}
+      \\\\ \\\\ \\displaystyle
+      ${result}
     \\end{array}`;
   }
 

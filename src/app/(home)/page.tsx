@@ -36,8 +36,10 @@ export default function HomePage() {
         </NavbarContent>
       </Navbar>
 
-      <Section className="flex h-full items-center">
-        <FactorizeCard className="mx-auto w-full max-w-4xl" />
+      <Section className="h-fullitems-center">
+        <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
+          <FactorizeCard className="mx-auto w-full max-w-4xl" />
+        </div>
       </Section>
 
       <BackgroundPattern />

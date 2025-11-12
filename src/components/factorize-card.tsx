@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 
-const INITIAL_LATEX = "\\int \\frac{5x + 3}{(x + 2)(x - 2)} ~\\mathrm{d}x";
+const INITIAL_LATEX = "\\int \\frac{12x + 3}{(x - 1)(x + 2)} ~\\mathrm{d}x";
 
 export default function FactorizeCard({
   ...props
@@ -53,9 +53,13 @@ export default function FactorizeCard({
 
   function handleClick() {
     try {
+      setSolution("");
+
       const partialFraction = new PartialFraction(expression);
 
       const solution = partialFraction.solve();
+
+      console.log(solution);
 
       setSolution(solution);
     } catch (error: any) {
@@ -65,55 +69,66 @@ export default function FactorizeCard({
   }
 
   return (
-    <Card {...props}>
-      <CardHeader>
-        <CardTitle>Resolva sua Integral utilizando Frações Parciais</CardTitle>
-        <CardDescription>
-          Escreva a sua expessão abaixo utilizando LaTeX.
-        </CardDescription>
-      </CardHeader>
+    <>
+      <Card {...props}>
+        <CardHeader>
+          <CardTitle>
+            Resolva sua Integral utilizando Frações Parciais
+          </CardTitle>
+          <CardDescription>
+            Escreva a sua expessão abaixo utilizando LaTeX.
+          </CardDescription>
+        </CardHeader>
 
-      <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="expression">Expressão:</Label>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <Heading size="md" variant="bold" asChild>
+              <Label htmlFor="expression">Expressão:</Label>
+            </Heading>
 
-          {isEditing ? (
-            <Textarea
-              id="expression"
-              ref={textareaRef}
-              value={expression}
-              onChange={(e) => setExpression(e.target.value)}
-              onBlur={() => setIsEditing(false)}
-              spellCheck={false}
-            />
-          ) : (
-            <div
-              className="border-input aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-24 w-full cursor-text overflow-hidden rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
-              onClick={() => setIsEditing(true)}
-              onFocus={() => setIsEditing(true)}
-              dangerouslySetInnerHTML={{ __html: renderedExpression }}
-              role="button"
-              tabIndex={0}
-            />
-          )}
-        </div>
+            {isEditing ? (
+              <Textarea
+                id="expression"
+                ref={textareaRef}
+                value={expression}
+                onChange={(e) => setExpression(e.target.value)}
+                onBlur={() => setIsEditing(false)}
+                spellCheck={false}
+              />
+            ) : (
+              <div
+                className="border-input aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-24 w-full cursor-text overflow-hidden rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+                onClick={() => setIsEditing(true)}
+                onFocus={() => setIsEditing(true)}
+                dangerouslySetInnerHTML={{ __html: renderedExpression }}
+                role="button"
+                tabIndex={0}
+              />
+            )}
+          </div>
+        </CardContent>
+
+        <CardFooter className="flex-row-reverse">
+          <Button onClick={handleClick}>Fatorar</Button>
+        </CardFooter>
 
         {solution.length > 0 && (
-          <>
-            <Heading size="md">Solução:</Heading>
+          <CardFooter className="block">
+            <Heading size="md" variant="bold">
+              Solução:
+            </Heading>
 
             <ScrollArea>
-              <div dangerouslySetInnerHTML={{ __html: renderedSolution }} />
+              <div
+                dangerouslySetInnerHTML={{ __html: renderedSolution }}
+                className="flex"
+              />
 
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
-          </>
+          </CardFooter>
         )}
-      </CardContent>
-
-      <CardFooter className="flex-row-reverse">
-        <Button onClick={handleClick}>Fatorar</Button>
-      </CardFooter>
-    </Card>
+      </Card>
+    </>
   );
 }
