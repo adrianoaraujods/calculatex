@@ -130,8 +130,131 @@ export class PartialFraction {
   }
 
   public solve(): string {
+    const partialFractionForm = this.getPartialFractionForm();
+    const expandedForm = this.getExpandedForm();
+
     return `\\begin{array}{l} \\displaystyle
-      \\frac{${this.numerator}}{${this.denominator}} = 
+      ${partialFractionForm}
+      \\\\ \\\\ \\displaystyle
+      \\frac{${this.numerator}}{${this.denominator}} = \\frac{${expandedForm}}{${this.denominator}}
+      \\\\ \\\\ \\displaystyle
+      ${this.numerator} = ${expandedForm}
     \\end{array}`;
+  }
+
+  private getPartialFractionForm(): string {
+    const rawTerms: string[] = [];
+
+    let symbol = 65; // 'A' in ASC II
+    for (let i = 0; i < this.factors.length; i++) {
+      const { content, multiplicity, type } = this.factors[i];
+
+      if (type === "linear") {
+        rawTerms.push(`\\frac{${String.fromCharCode(symbol++)}}{${content}}`);
+
+        for (let j = 2; j <= multiplicity; j++) {
+          rawTerms.push(
+            `\\frac{${String.fromCharCode(symbol++)}}{(${content})^{${j}}}`
+          );
+        }
+      } else {
+        rawTerms.push(
+          `\\frac{${String.fromCharCode(symbol++)}x + ${String.fromCharCode(symbol++)}}{${content}}`
+        );
+
+        for (let j = 2; j <= multiplicity; j++) {
+          rawTerms.push(
+            `\\frac{${String.fromCharCode(symbol++)}x + ${String.fromCharCode(symbol++)}}{(${content})^{${j}}}`
+          );
+        }
+      }
+    }
+
+    return `\\frac{${this.numerator}}{${this.denominator}} = ${rawTerms.join(" + ")}`;
+  }
+
+  private getExpandedForm(): string {
+    const multipliedTerms: string[] = [];
+
+    let symbol = 65; // 'A' in ASC II
+    for (let i = 0; i < this.factors.length; i++) {
+      const { content, multiplicity, type } = this.factors[i];
+
+      if (type === "linear") {
+        const multipliedTerm: string[] = [];
+
+        for (let j = 0; j < this.factors.length; j++) {
+          if (i === j) continue;
+
+          const power = this.factors[j].multiplicity;
+
+          multipliedTerm.push(
+            `(${this.factors[j].content})${power < 2 ? "" : `^{${power}}`}`
+          );
+        }
+
+        multipliedTerms.push(
+          [
+            String.fromCharCode(symbol++),
+            multiplicity < 2
+              ? ""
+              : `(${content})${multiplicity > 2 ? `^{${multiplicity - 1}}` : ""}`,
+            multipliedTerm,
+          ].join("")
+        );
+
+        for (let j = 2; j <= multiplicity; j++) {
+          multipliedTerms.push(
+            [
+              String.fromCharCode(symbol++),
+              multiplicity - j < 1
+                ? ""
+                : `(${content})${multiplicity - j > 2 ? `^{${multiplicity - j - 1}}` : ""}`,
+              multipliedTerm,
+            ].join("")
+          );
+        }
+      } else {
+        const term = `${String.fromCharCode(symbol++)}x + ${String.fromCharCode(symbol++)}`;
+
+        const multipliedTerm: string[] = [];
+
+        for (let j = 0; j < this.factors.length; j++) {
+          if (i === j) continue;
+
+          const power = this.factors[j].multiplicity;
+
+          multipliedTerm.push(
+            `(${this.factors[j].content})${power < 2 ? "" : `^{${power}}`}`
+          );
+        }
+
+        multipliedTerms.push(
+          [
+            `(${term})`,
+            multiplicity < 2
+              ? ""
+              : `(${content})${multiplicity > 2 ? `^{${multiplicity - 1}}` : ""}`,
+            multipliedTerm,
+          ].join("")
+        );
+
+        for (let j = 2; j <= multiplicity; j++) {
+          const term = `${String.fromCharCode(symbol++)}x + ${String.fromCharCode(symbol++)}`;
+
+          multipliedTerms.push(
+            [
+              `(${term})`,
+              multiplicity - j < 1
+                ? ""
+                : `(${content})${multiplicity - j > 2 ? `^{${multiplicity - j - 1}}` : ""}`,
+              multipliedTerm,
+            ].join("")
+          );
+        }
+      }
+    }
+
+    return multipliedTerms.join(" + ");
   }
 }
