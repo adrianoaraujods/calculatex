@@ -5,7 +5,7 @@ import * as React from "react";
 import katex from "katex";
 import { toast } from "sonner";
 
-import { PartialFraction } from "@/lib/partial-fractions";
+import { ExpressionType, PartialFraction } from "@/lib/partial-fractions";
 import { Heading } from "@/components/typography/heading";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,12 +22,20 @@ import { Textarea } from "@/components/ui/textarea";
 
 const INITIAL_LATEX = "\\int \\frac{12x + 3}{(x - 1)(x + 2)} ~\\mathrm{d}x";
 
+const TYPES_MAP: { [T in ExpressionType]: string } = {
+  linear: "Linear",
+  mixed: "Misto",
+  quadratic: "Quadrática",
+  unknown: "Não identificado",
+};
+
 export default function FactorizeCard({
   ...props
 }: React.ComponentProps<typeof Card>) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [expression, setExpression] = React.useState(INITIAL_LATEX);
-  const [solution, setSolution] = React.useState("");
+  const [output, setOutput] = React.useState("");
+  const [type, setType] = React.useState<ExpressionType>("unknown");
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   React.useEffect(() => {
@@ -44,24 +52,41 @@ export default function FactorizeCard({
     });
   }, [expression]);
 
-  const renderedSolution = React.useMemo(() => {
-    return katex.renderToString(solution, {
+  const renderedOutput = React.useMemo(() => {
+    return katex.renderToString(output, {
       throwOnError: false,
       displayMode: true,
     });
-  }, [solution]);
+  }, [output]);
 
-  function handleClick() {
+  function showSolution() {
+    setOutput("");
+    setType("unknown");
+
     try {
-      setSolution("");
-
       const partialFraction = new PartialFraction(expression);
-
+      const type = partialFraction.type;
       const solution = partialFraction.solve();
 
-      console.log(solution);
+      setOutput(solution);
+      setType(type);
+    } catch (error: any) {
+      toast.error(String(error.message));
+      return;
+    }
+  }
 
-      setSolution(solution);
+  function showExpansion() {
+    setOutput("");
+    setType("unknown");
+
+    try {
+      const partialFraction = new PartialFraction(expression);
+      const type = partialFraction.type;
+      const expansion = partialFraction.expand();
+
+      setOutput(expansion);
+      setType(type);
     } catch (error: any) {
       toast.error(String(error.message));
       return;
@@ -108,19 +133,31 @@ export default function FactorizeCard({
           </div>
         </CardContent>
 
-        <CardFooter className="flex-row-reverse">
-          <Button onClick={handleClick}>Fatorar</Button>
+        <CardFooter>
+          {type !== "unknown" && (
+            <Heading size="md">
+              <span className="font-bold">Tipo:</span> {TYPES_MAP[type]}
+            </Heading>
+          )}
+
+          <div className="ml-auto flex gap-4">
+            <Button variant="destructive" onClick={showExpansion}>
+              Expandir
+            </Button>
+
+            <Button onClick={showSolution}>Resolver</Button>
+          </div>
         </CardFooter>
 
-        {solution.length > 0 && (
+        {output.length > 0 && (
           <CardFooter className="block">
             <Heading size="md" variant="bold">
-              Solução:
+              Resultado:
             </Heading>
 
             <ScrollArea>
               <div
-                dangerouslySetInnerHTML={{ __html: renderedSolution }}
+                dangerouslySetInnerHTML={{ __html: renderedOutput }}
                 className="flex"
               />
 
